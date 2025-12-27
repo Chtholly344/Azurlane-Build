@@ -122,8 +122,8 @@ DOWNLOAD_MOD_MENU() {
 
     if [ -z "${DOWNLOAD_LINK}" ] || [ "${DOWNLOAD_LINK}" == "null" ]; then
         # 修改：查找name中含有.zip的文件，避免后缀不一致导致的无法获取链接
-        local FILENAME="MOD_MENU.zip"
-        local DOWNLOAD_LINK=$(echo "${API_RESPONSE}" | jq -r '.assets[] | select(.name | contains(".zip")) | .browser_download_url' | head -n 1)
+        FILENAME="MOD_MENU.zip"
+        DOWNLOAD_LINK=$(echo "${API_RESPONSE}" | jq -r '.assets[] | select(.name | contains(".zip")) | .browser_download_url' | head -n 1)
         if [ -z "${DOWNLOAD_LINK}" ] || [ "${DOWNLOAD_LINK}" == "null" ]; then
             echo "无法获取MOD Patch文件下载链接"
             exit 1
@@ -152,7 +152,17 @@ DOWNLOAD_MOD_MENU() {
     echo "JMBQ目录内容:"  
     ls -la "${DOWNLOAD_DIR}/JMBQ" 2>/dev/null || echo "无法列出目录内容"
 
-    echo "JMBQ_VERSION=${JMBQ_VERSION}" >> "${GITHUB_ENV}"
+    # 将版本写入 GITHUB_ENV（供后续步骤作为环境变量），
+    # 并在 GitHub Actions 环境下写入 $GITHUB_OUTPUT（用于 step 输出），避免使用已废弃的 ::set-output
+    if [ -n "${JMBQ_VERSION}" ]; then
+        if [ -n "${GITHUB_ENV}" ]; then
+            echo "JMBQ_VERSION=${JMBQ_VERSION}" >> "${GITHUB_ENV}"
+        fi
+        if [ -n "${GITHUB_OUTPUT}" ]; then
+            # 输出键名使用小写（在 workflow 中按需读取）
+            echo "jmbq_version=${JMBQ_VERSION}" >> "${GITHUB_OUTPUT}"
+        fi
+    fi
 }
 
 # 下载APK（通用函数，根据构建类型执行不同的下载逻辑）
@@ -290,8 +300,8 @@ PATCH_APK() {
     }
 
     echo "正在修改 ${SMALI_FILE} 文件..."
-    sed -i -e "/\.method public constructor <init>()V/,/\.end method/{" \
-           -e "/\.locals 0/a\    invoke-static {}, Lcom/android/support/Main;->Start()V" \
+    sed -i -e "/\\.method public constructor <init>()V/,/\\.end method/{" \
+           -e "/\\.locals 0/a\\    invoke-static {}, Lcom/android/support/Main;->Start()V" \
            -e "}" "${SMALI_FILE}" || {
         echo "错误：添加smali代码失败，请检查文件路径、权限或文件内容格式。"
         exit 1
@@ -300,10 +310,18 @@ PATCH_APK() {
 
     echo "正在修改 AndroidManifest.xml 文件..."
     local MANIFEST_FILE="${DOWNLOAD_DIR}/DECODE_Output/AndroidManifest.xml"
-    sed -i 's#</application>#    <service android:name="com.android.support.Launcher" android:enabled="true" android:exported="false" android:stopWithTask="true"/>\n    </application>\n    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>#' "${MANIFEST_FILE}" || {
-        echo "错误：修改 AndroidManifest.xml 文件失败，请检查文件路径、权限或文件内容格式。"
+    if [ -f "${MANIFEST_FILE}" ]; then
+        # 在 </application> 前插入 service 条目（如果不存在）
+        if ! grep -q 'com.android.support.Launcher' "${MANIFEST_FILE}"; then
+            sed -i '/<\\/application>/i \\\    <service android:name="com.android.support.Launcher" android:enabled="true" android:exported="false" android:stopWithTask="true"/>' "${MANIFEST_FILE}" || {
+                echo "错误：修改 AndroidManifest.xml 文件失败，请检查文件路径、权限或文件内容格式。"
+                exit 1
+            }
+        fi
+    else
+        echo "错误：未找到 AndroidManifest.xml 文件: ${MANIFEST_FILE}"
         exit 1
-    }
+    fi
     echo "修改成功！"
     echo "补丁完成。"
 }
@@ -405,7 +423,18 @@ GET_GAME_VERSION() {
     else
         echo "错误：APK文件不存在: ${APK_TO_CHECK}"
     fi
-    echo "VERSION=${GAME_VERSION}" >> "${GITHUB_ENV}"
+
+    # 将版本写入 GITHUB_ENV（供后续步骤作为环境变量），
+    # 并在 GitHub Actions 环境下写入 $GITHUB_OUTPUT（用于 step 输出），避免使用已废弃的 ::set-output
+    if [ -n "${GAME_VERSION}" ]; then
+        if [ -n "${GITHUB_ENV}" ]; then
+            echo "VERSION=${GAME_VERSION}" >> "${GITHUB_ENV}"
+        fi
+        if [ -n "${GITHUB_OUTPUT}" ]; then
+            echo "version=${GAME_VERSION}" >> "${GITHUB_OUTPUT}"
+        fi
+    fi
+
     echo "游戏版本: ${GAME_VERSION}"
 }
 
@@ -472,7 +501,7 @@ PRINT_LOGO() {
 |\   __  \|\_____  \|\  \|\  \|\   __  \|\  \     |\   __  \|\   ___  \|\  ___ \            |\  \|\   _ \  _   \|\   __  \|\   __  \     
 \ \  \|\  \\___/  /\ \  \\  \ \  \|\  \ \  \    \ \  \|\  \ \  \\ \  \ \   __/|           \ \  \ \  \\__\ \  \ \  \|\ /\ \  \|\  \    
  \ \   __  \   /  / /\ \  \\  \ \   _  _\ \  \    \ \   __  \ \  \\ \  \ \  \_|/__       __ \ \  \ \  \\|__| \  \ \   __  \ \  \\  \\  
-  \ \  \ \  \ /  /_/__\ \  \\  \ \  \\  \\ \  \____\ \  \ \  \ \  \\ \  \ \  \_|\ \     |\  \\\_\  \ \  \    \ \  \ \  \|\  \ \  \\  \\  
+  \ \  \ \  \ /  /_/__\ \  \\  \ \  \\  \\ \  \____\ \  \ \  \ \  \\ \  \ \  \_|\ \     |\  \\\\_\  \ \  \    \ \  \ \  \|\  \ \  \\  \\  
    \ \__\ \__\\________\ \_______\ \__\\ _\\ \_______\ \__\ \__\ \__\\ \__\ \_______\    \ \________\ \__\    \ \__\ \_______\ \_____  \ 
     \|__|\|__\|\|_______|\|_______|\|__|\|__\|_______|\|__|\|__|\|__| \|__\|_______|     \|________|\|__|     \|__\|_______|\|___| \__\
                                                                                                                                     \|__|
