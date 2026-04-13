@@ -35,6 +35,7 @@
 - **OPPO**和**4399**渠道服请自行下载安装包，上传网盘后获取直链下载
 
 <div align="center" style="margin: 10px 0;">
+  <a href="https://game.bilibili.com/blhx"><img src="images/bilibili.svg" width="32" style="margin: 0 5px;"></a>
   <a href="https://app.mi.com/details?id=com.bilibili.blhx.mi"><img src="images/xiaomi.svg" width="32" style="margin: 0 5px;"></a>
   <a href="https://sj.qq.com/appdetail/com.tencent.tmgp.bilibili.blhx"><img src="images/yingyongbao.svg" width="32" style="margin: 0 5px;"></a>
   <a href="https://www.9game.cn/bilanhangxian"><img src="images/jiuyou.svg" width="32" style="margin: 0 5px;"></a>
