@@ -76,11 +76,6 @@
 - **华为服**：启动界面卡顿，疑似由于签名验证问题导致HMS Core初始化失败。
 
 ---
-## ❓ 常见问题 (FAQ)
-
-- **Q：3.2.0 往后的版本为什么不再进行构建了？**
-> **A：** JMBQ 在 3.2.0 往后的版本中加入了在线补丁，本项目后续仅会进行3.2.0补丁+渠道服包体的构建流程。请自行寻找相关的文件管理器手动进行补丁更新。[**说明**](https://github.com/JMBQ/azurlane/releases/tag/3.2.0)
-
 ## 📚 致谢
 
 1. [JMBQ/azurlane](https://github.com/JMBQ/azurlane)  
