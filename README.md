@@ -32,7 +32,7 @@
 若您有一定的动手能力，请自行fork本仓库，手动运行工作流来获取对应的APK
 
 ### ⚠️⚠️⚠️ 注意！！！
-- **OPPO**和**4399**渠道服请自行下载安装包，上传网盘后获取直链下载。网盘建议使用[钛盘](https://tmp.link)来获取下载直链
+- **OPPO**，**4399**，**vivo**，**bilibili**，**应用宝**渠道服请自行下载安装包，上传网盘后获取直链下载。网盘建议使用[钛盘](https://tmp.link)来获取下载直链
 
 #### 💢💢💢 碎碎念！！！
 ~~已被中心化网盘的一次性直链限制整麻了。点击下载并获取直链的同时，直链直接报废，导致频繁构建失败。~~
@@ -70,6 +70,7 @@
 ---
 ## 预览
 ![Screenshot_2025-11-23-09-17-23-266_com bilibili azurlane](https://github.com/user-attachments/assets/3d57e120-2444-4a6d-8e0c-afb44f76a9b8)
+<img width="1600" height="900" alt="DD116534BE113DC47D7DA3D253167650" src="https://github.com/user-attachments/assets/5b62fabc-caea-4868-8710-8f5a7e18403c" />
 
 ---
 ## 🚧 已知问题
