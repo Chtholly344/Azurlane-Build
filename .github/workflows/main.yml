@@ -52,7 +52,6 @@ jobs:
           cp RELEASE_NOTES.md current_release.md
           
           echo "" >> current_release.md
-          echo "### 📦 本次构建动态信息" >> current_release.md
       
       # 步骤7：创建 Release 并上传所有分卷文件
       - name: Release and Upload Assets
