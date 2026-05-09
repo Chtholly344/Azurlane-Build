@@ -388,10 +388,11 @@ INJECT_MT_PROVIDER() {
         echo "未找到 MTDataFilesProvider/bin 目录，请检查路径"
         return 1
     fi
+    
     if [ -d "${TARGET_DIR}/smali_classes2" ]; then
         cp -r "MTDataFilesProvider/bin" "${TARGET_DIR}/smali_classes3/"
         echo "Smali 文件成功拷贝至 smali_classes2 (规避 64K 限制)"
-    else [ -d "${TARGET_DIR}/smali_classes3" ]; then
+    else 
         cp -r "MTDataFilesProvider/bin" "${TARGET_DIR}/smali_classes2/"
         echo "Smali 文件成功拷贝至 smali_classes3 (规避 64K 限制)"
     fi
