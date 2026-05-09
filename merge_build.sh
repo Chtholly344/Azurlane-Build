@@ -384,14 +384,18 @@ INJECT_MT_PROVIDER() {
 
     # 2. 拷贝 Smali 文件 (保持 bin/mt/file/content/ 结构)
     mkdir -p "${TARGET_DIR}/smali"
-    if [ -d "MTDataFilesProvider/bin" ]; then
-        cp -r "MTDataFilesProvider/bin" "${TARGET_DIR}/smali/"
-        echo "Smali 文件拷贝完成"
-    else
+    if [ ! -d "MTDataFilesProvider/bin" ]; then
         echo "未找到 MTDataFilesProvider/bin 目录，请检查路径"
         return 1
     fi
-
+    if [ -d "${TARGET_DIR}/smali_classes2" ]; then
+        cp -r "MTDataFilesProvider/bin" "${TARGET_DIR}/smali_classes3/"
+        echo "Smali 文件成功拷贝至 smali_classes2 (规避 64K 限制)"
+    else [ -d "${TARGET_DIR}/smali_classes3" ]; then
+        cp -r "MTDataFilesProvider/bin" "${TARGET_DIR}/smali_classes2/"
+        echo "Smali 文件成功拷贝至 smali_classes3 (规避 64K 限制)"
+    fi
+    
     # 3. 修改 AndroidManifest.xml
     if grep -q "MTDataFilesProvider" "${MANIFEST_FILE}"; then
         echo "已存在 MT 组件，跳过修改"
