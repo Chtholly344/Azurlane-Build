@@ -45,7 +45,6 @@ jobs:
           cp RELEASE_NOTES.md current_release.md
           
           echo "" >> current_release.md
-          echo "### 📦 Build Details" >> current_release.md
       
       - name: Release and Upload Assets
         uses: ncipollo/release-action@v1
