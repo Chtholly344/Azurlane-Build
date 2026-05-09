@@ -84,7 +84,7 @@
 
 1. [JMBQ/azurlane](https://github.com/JMBQ/azurlane)  
 2. [n0k0m3/PerseusCI](https://github.com/n0k0m3/PerseusCI)
-
+3. [L-JINBIN/MTDataFilesProvider](https://github.com/L-JINBIN/MTDataFilesProvider)
 ---
 
 ## 📊 Star历史
