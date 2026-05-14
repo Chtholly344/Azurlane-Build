@@ -23,13 +23,13 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Setup Java JDK
-        uses: actions/setup-java@v3.3.0
+        uses: actions/setup-java@v4
         with:
-          java-version: "17"
+          java-version: "18"
           distribution: "adopt"
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: Install build-tools
         run: |
@@ -40,6 +40,12 @@ jobs:
           chmod +x merge_build.sh
           ./merge_build.sh "${{ github.event.inputs.region }}"
 
+      - name: Generate Release Notes
+        run: |
+          cp RELEASE_NOTES.md current_release.md
+          
+          echo "" >> current_release.md
+      
       - name: Release and Upload Assets
         uses: ncipollo/release-action@v1
         with:
@@ -47,17 +53,4 @@ jobs:
           name: "AzurLane JMBQ ${{ env.JMBQ_VERSION }} Build XAPK"
           artifacts: "${{ github.event.inputs.region }}-V.${{ env.VERSION }}.7z.*"
           allowUpdates: true
-          body: |
-            <details>
-              <summary>中文安装说明 - 点击展开</summary>
-                1. 在下方列表中找到你需要的版本前缀，下载该服务器名称前缀的所有以 7z.00* 结尾的文件</br>
-                2. 解压时只需要选择"XXX.7z.001"解压即可</br>
-                3. 在解压后的文件夹中找到xapk文件并安装，安装方法请自行查询相关教程
-            </details>
-            
-            <details>
-              <summary>English Installation Instructions - Click to expand</summary>
-                1. Find the version prefix you need in the list below, and download all files ending with 7z.00* that have that server name prefix</br>
-                2. When extracting, simply select the "XXX.7z.001" file to decompress</br>
-                3. Find the XAPK file in the extracted folder and install it, please refer to the relevant tutorials for installation methods
-            </details>
+          bodyFile: "current_release.md"

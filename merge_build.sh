@@ -92,7 +92,14 @@ DOWNLOAD_APKTOOL() {
     local FILENAME="apktool.jar"
 
     echo "正在下载Apktool..."
-    local API_RESPONSE=$(curl -s "https://api.github.com/repos/${OWNER}/${REPO}/releases/latest")
+    # 新增判断：修复TW在新版Apktool反编译 Androidmanifest.xml 时报错
+    if [ "${GAME_SERVER}" == "TW" ]; then
+    API_URL="https://api.github.com/repos/${OWNER}/${REPO}/releases/tags/v2.12.1"
+    else
+    API_URL="https://api.github.com/repos/${OWNER}/${REPO}/releases/latest"
+    fi
+    
+    local API_RESPONSE=$(curl -s "${API_URL}")
     local DOWNLOAD_LINK=$(echo "${API_RESPONSE}" | jq -r '.assets[] | select(.name | endswith(".jar")) | .browser_download_url' | head -n 1)
     if [ -z "${DOWNLOAD_LINK}" ] || [ "${DOWNLOAD_LINK}" == "null" ]; then
         echo "无法找到Apktool下载链接"
@@ -115,8 +122,45 @@ DOWNLOAD_MOD_MENU() {
     local FILENAME="MOD_MENU.rar"
 
     echo "正在下载MOD补丁..."
+    local API_OLD_RESPONSE=$(curl -s "https://api.github.com/repos/${OWNER}/${REPO}/releases/tags/3.2.0")
     local API_RESPONSE=$(curl -s "https://api.github.com/repos/${OWNER}/${REPO}/releases/latest")
     local JMBQ_VERSION=$(echo "${API_RESPONSE}" | jq -r '.tag_name')
+
+    # 修改：查找name中含有.rar的文件，而不是直接使用第一个assets
+    local DOWNLOAD_OLD_LINK=$(echo "${API_OLD_RESPONSE}" | jq -r '.assets[] | select(.name | contains(".rar")) | .browser_download_url' | head -n 1)
+    if [ -z "${DOWNLOAD_OLD_LINK}" ] || [ "${DOWNLOAD_OLD_LINK}" == "null" ]; then
+        # 修改：查找name中含有.zip的文件，避免后缀不一致导致的无法获取链接
+        local FILENAME="MOD_MENU.zip"
+        local DOWNLOAD_OLD_LINK=$(echo "${API_OLD_RESPONSE}" | jq -r '.assets[] | select(.name | contains(".zip")) | .browser_download_url' | head -n 1)
+        if [ -z "${DOWNLOAD_OLD_LINK}" ] || [ "${DOWNLOAD_OLD_LINK}" == "null" ]; then
+            echo "无法获取MOD Patch文件下载链接"
+            exit 1
+        fi
+    fi
+
+    curl -L -o "${DOWNLOAD_DIR}/${FILENAME}" "${DOWNLOAD_OLD_LINK}"
+    if [ $? -eq 0 ]; then
+        echo "旧版补丁下载成功！文件保存至：${DOWNLOAD_DIR}/${FILENAME}"
+    else
+        echo "旧版补丁下载失败，请重试"
+        exit 1
+    fi
+
+    if command -v 7z &> /dev/null; then
+        7z x -y "${DOWNLOAD_DIR}/${FILENAME}" -o"${DOWNLOAD_DIR}/JMBQ"
+    else
+        echo "错误: 未找到7z工具，无法解压！"
+        exit 1
+    fi
+    
+    if [ $? -ne 0 ]; then
+        echo "错误: 解压 ${FILENAME} 失败！"
+        exit 1
+    fi
+
+    echo "正在下载MOD补丁..."
+    # 恢复原命名防止逻辑报错
+    FILENAME="MOD_MENU.rar"
     # 修改：查找name中含有.rar的文件，而不是直接使用第一个assets
     local DOWNLOAD_LINK=$(echo "${API_RESPONSE}" | jq -r '.assets[] | select(.name | contains(".rar")) | .browser_download_url' | head -n 1)
 
@@ -139,7 +183,7 @@ DOWNLOAD_MOD_MENU() {
     fi
 
     if command -v 7z &> /dev/null; then
-        7z x -y "${DOWNLOAD_DIR}/${FILENAME}" -o"${DOWNLOAD_DIR}/JMBQ"
+        7z x -y "${DOWNLOAD_DIR}/${FILENAME}" -o"${DOWNLOAD_DIR}/JMBQ/assets/arch"
     else
         echo "错误: 未找到7z工具，无法解压！"
         exit 1
@@ -310,6 +354,67 @@ PATCH_APK() {
     }
     echo "修改成功！"
     echo "补丁完成。"
+}
+
+# 注入MT文件提供器
+INJECT_MT_PROVIDER() {
+    echo "正在注入 MTDataFilesProvider..."
+    local TARGET_DIR="${DOWNLOAD_DIR}/DECODE_Output"
+    local MANIFEST_FILE="${TARGET_DIR}/AndroidManifest.xml"
+    
+    # 检查清单文件是否存在，防止路径错误
+    if [ ! -f "${MANIFEST_FILE}" ]; then
+        echo "错误：找不到 ${MANIFEST_FILE}，解包可能失败或路径不匹配！"
+        return 1
+    fi
+    
+    # 1. 自动获取包名（如果是XAPK则使用预设，如果是APK则从清单提取）
+    local CURRENT_PKG=""
+    if [ "${BUILD_TYPE}" = "XAPK" ]; then
+        CURRENT_PKG="${GAME_BUNDLE_ID}"
+    else
+        CURRENT_PKG=$(grep -oP 'package="\K[^"]+' "${MANIFEST_FILE}")
+    fi
+
+    if [ -z "${CURRENT_PKG}" ]; then
+        echo "无法识别包名，取消注入"
+        return 1
+    fi
+    echo "识别到目标包名: ${CURRENT_PKG}"
+
+    # 2. 拷贝 Smali 文件 (保持 bin/mt/file/content/ 结构)
+    mkdir -p "${TARGET_DIR}/smali"
+    if [ ! -d "MTDataFilesProvider/bin" ]; then
+        echo "未找到 MTDataFilesProvider/bin 目录，请检查路径"
+        return 1
+    fi
+    
+    if [ -d "${TARGET_DIR}/smali_classes2" ]; then
+        cp -r "MTDataFilesProvider/bin" "${TARGET_DIR}/smali_classes2/"
+        echo "Smali 文件成功拷贝至 smali_classes2 (规避 64K 限制)"
+    else 
+        cp -r "MTDataFilesProvider/bin" "${TARGET_DIR}/smali_classes3/"
+        echo "Smali 文件成功拷贝至 smali_classes3 (规避 64K 限制)"
+    fi
+    
+    # 3. 修改 AndroidManifest.xml
+    if grep -q "MTDataFilesProvider" "${MANIFEST_FILE}"; then
+        echo "已存在 MT 组件，跳过修改"
+    else
+        local PROVIDER_XML="<provider android:name=\"bin.mt.file.content.MTDataFilesProvider\" android:authorities=\"${CURRENT_PKG}.MTDataFilesProvider\" android:exported=\"true\" android:grantUriPermissions=\"true\" android:permission=\"android.permission.MANAGE_DOCUMENTS\"><intent-filter><action android:name=\"android.content.action.DOCUMENTS_PROVIDER\"/></intent-filter></provider>"
+        local ACTIVITY_XML="<activity android:name=\"bin.mt.file.content.MTDataFilesWakeUpActivity\" android:exported=\"true\" android:excludeFromRecents=\"true\" android:theme=\"@android:style/Theme.Translucent.NoTitleBar\" />"
+        
+        sed -i "s|</application>|${PROVIDER_XML}${ACTIVITY_XML}</application>|g" "${MANIFEST_FILE}"
+        echo "AndroidManifest.xml 注入完成"
+
+        # 二次校验是否注入成功
+        if grep -q "MTDataFilesProvider" "${MANIFEST_FILE}"; then
+            echo "AndroidManifest.xml 注入成功！"
+        else
+            echo "AndroidManifest.xml 注入失败！"
+            return 1
+        fi
+    fi
 }
 
 # 打包APK
@@ -503,6 +608,7 @@ main() {
         DECODE_APK
         DELETE_ORGINAL_APK
         PATCH_APK
+        INJECT_MT_PROVIDER
         BUILD_APK
         OPTIMIZE_AND_SIGN_APK
         GET_GAME_VERSION
@@ -516,6 +622,7 @@ main() {
         DECODE_APK
         DELETE_ORGINAL_APK
         PATCH_APK
+        INJECT_MT_PROVIDER
         BUILD_APK
         OPTIMIZE_AND_SIGN_APK
         GET_GAME_VERSION

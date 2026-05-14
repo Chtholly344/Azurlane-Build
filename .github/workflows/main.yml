@@ -26,14 +26,14 @@ jobs:
       
       # 步骤2：设置 Java JDK
       - name: Setup Java JDK
-        uses: actions/setup-java@v3.3.0
+        uses: actions/setup-java@v4
         with:
-          java-version: "17"
+          java-version: "18"
           distribution: "adopt"
 
       # 步骤3：设置 Android SDK
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       # 步骤4：安装 build-tools
       - name: Install build-tools
@@ -46,7 +46,14 @@ jobs:
           chmod +x merge_build.sh
           ./merge_build.sh "${{ github.event.inputs.server_name }}" "${{ github.event.inputs.download_url }}"
 
-      # 步骤6：创建 Release 并上传所有分卷文件
+      # 步骤6: 动态拼接 Release 简介
+      - name: Generate Release Notes
+        run: |
+          cp RELEASE_NOTES.md current_release.md
+          
+          echo "" >> current_release.md
+      
+      # 步骤7：创建 Release 并上传所有分卷文件
       - name: Release and Upload Assets
         uses: ncipollo/release-action@v1
         with:
@@ -54,17 +61,4 @@ jobs:
           name: "AzurLane JMBQ ${{ env.JMBQ_VERSION }} Build APK"
           artifacts: "${{ github.event.inputs.server_name }}-V.${{ env.VERSION }}.7z.*"
           allowUpdates: true
-          body: |
-            <details>
-              <summary>中文安装说明 - 点击展开</summary>
-                1. 在下方列表中找到你需要的版本前缀，下载该服务器名称前缀的所有以 7z.00* 结尾的文件</br>
-                2. 解压时只需要选择"XXX.7z.001"解压即可</br>
-                3. 在解压后的文件夹中找到apk文件并安装
-            </details>
-            
-            <details>
-              <summary>English Installation Instructions - Click to expand</summary>
-                1. Find the version prefix you need in the list below, and download all files ending with 7z.00* that have that server name prefix</br>
-                2. When extracting, simply select the "XXX.7z.001" file to decompress</br>
-                3. Find the APK file in the extracted folder and install it
-            </details>
+          bodyFile: "current_release.md"

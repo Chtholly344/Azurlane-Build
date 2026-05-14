@@ -24,17 +24,21 @@
 本项目仅用于学习和研究，请在遵守相关法律法规的前提下使用本项目，若您违规使用使用本项目，那么所导致的一切后果将由您本人承担。
 
 - **风险警告**：使用mod可能涉及未知风险，如果您坚持使用，那么您将承担可能会造成的任何后果，包括但不限于您的游戏账号被封禁
-- **登录问题**：重新打包的APK签名与官方版本不同，可能导致第三方授权登录失败。请优先使用二维码或验证码登录。
+- **登录问题**：重新打包的APK签名与官方版本不同，可能导致第三方授权登录失败。请优先使用二维码或验证码登录。或使用此[方案](https://github.com/JMBQ/azurlane/issues/155#issue-3786864655)解决
 
 ---
 
 ## 各渠道服安装包官方下载地址
 若您有一定的动手能力，请自行fork本仓库，手动运行工作流来获取对应的APK
 
-⚠️⚠️⚠️ 注意！！！
-- **OPPO**和**4399**渠道服请自行下载安装包，上传网盘后获取直链下载
+### ⚠️⚠️⚠️ 注意！！！
+- **OPPO**，**4399**，**vivo**，**bilibili**，**应用宝**渠道服请自行下载安装包，上传网盘后获取直链下载。网盘建议使用[钛盘](https://tmp.link)来获取下载直链
+
+#### 💢💢💢 碎碎念！！！
+~~已被中心化网盘的一次性直链限制整麻了。点击下载并获取直链的同时，直链直接报废，导致频繁构建失败。~~
 
 <div align="center" style="margin: 10px 0;">
+  <a href="https://game.bilibili.com/blhx"><img src="images/bilibili.svg" width="32" style="margin: 0 5px;"></a>
   <a href="https://app.mi.com/details?id=com.bilibili.blhx.mi"><img src="images/xiaomi.svg" width="32" style="margin: 0 5px;"></a>
   <a href="https://sj.qq.com/appdetail/com.tencent.tmgp.bilibili.blhx"><img src="images/yingyongbao.svg" width="32" style="margin: 0 5px;"></a>
   <a href="https://www.9game.cn/bilanhangxian"><img src="images/jiuyou.svg" width="32" style="margin: 0 5px;"></a>
@@ -66,6 +70,7 @@
 ---
 ## 预览
 ![Screenshot_2025-11-23-09-17-23-266_com bilibili azurlane](https://github.com/user-attachments/assets/3d57e120-2444-4a6d-8e0c-afb44f76a9b8)
+<img width="1600" height="900" alt="DD116534BE113DC47D7DA3D253167650" src="https://github.com/user-attachments/assets/5b62fabc-caea-4868-8710-8f5a7e18403c" />
 
 ---
 ## 🚧 已知问题
@@ -75,12 +80,11 @@
 - **华为服**：启动界面卡顿，疑似由于签名验证问题导致HMS Core初始化失败。
 
 ---
-
 ## 📚 致谢
 
 1. [JMBQ/azurlane](https://github.com/JMBQ/azurlane)  
 2. [n0k0m3/PerseusCI](https://github.com/n0k0m3/PerseusCI)
-
+3. [L-JINBIN/MTDataFilesProvider](https://github.com/L-JINBIN/MTDataFilesProvider)
 ---
 
 ## 📊 Star历史
