@@ -412,6 +412,7 @@ INJECT_MT_PROVIDER() {
             echo "AndroidManifest.xml 注入成功！"
         else
             echo "AndroidManifest.xml 注入失败！"
+            return 1
         fi
     fi
 }
