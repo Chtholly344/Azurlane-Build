@@ -122,45 +122,9 @@ DOWNLOAD_MOD_MENU() {
     local FILENAME="MOD_MENU.rar"
 
     echo "正在下载MOD补丁..."
-    local API_OLD_RESPONSE=$(curl -s "https://api.github.com/repos/${OWNER}/${REPO}/releases/tags/3.2.0")
     local API_RESPONSE=$(curl -s "https://api.github.com/repos/${OWNER}/${REPO}/releases/latest")
     local JMBQ_VERSION=$(echo "${API_RESPONSE}" | jq -r '.tag_name')
 
-    # 修改：查找name中含有.rar的文件，而不是直接使用第一个assets
-    local DOWNLOAD_OLD_LINK=$(echo "${API_OLD_RESPONSE}" | jq -r '.assets[] | select(.name | contains(".rar")) | .browser_download_url' | head -n 1)
-    if [ -z "${DOWNLOAD_OLD_LINK}" ] || [ "${DOWNLOAD_OLD_LINK}" == "null" ]; then
-        # 修改：查找name中含有.zip的文件，避免后缀不一致导致的无法获取链接
-        local FILENAME="MOD_MENU.zip"
-        local DOWNLOAD_OLD_LINK=$(echo "${API_OLD_RESPONSE}" | jq -r '.assets[] | select(.name | contains(".zip")) | .browser_download_url' | head -n 1)
-        if [ -z "${DOWNLOAD_OLD_LINK}" ] || [ "${DOWNLOAD_OLD_LINK}" == "null" ]; then
-            echo "无法获取MOD Patch文件下载链接"
-            exit 1
-        fi
-    fi
-
-    curl -L -o "${DOWNLOAD_DIR}/${FILENAME}" "${DOWNLOAD_OLD_LINK}"
-    if [ $? -eq 0 ]; then
-        echo "旧版补丁下载成功！文件保存至：${DOWNLOAD_DIR}/${FILENAME}"
-    else
-        echo "旧版补丁下载失败，请重试"
-        exit 1
-    fi
-
-    if command -v 7z &> /dev/null; then
-        7z x -y "${DOWNLOAD_DIR}/${FILENAME}" -o"${DOWNLOAD_DIR}/JMBQ"
-    else
-        echo "错误: 未找到7z工具，无法解压！"
-        exit 1
-    fi
-    
-    if [ $? -ne 0 ]; then
-        echo "错误: 解压 ${FILENAME} 失败！"
-        exit 1
-    fi
-
-    echo "正在下载MOD补丁..."
-    # 恢复原命名防止逻辑报错
-    FILENAME="MOD_MENU.rar"
     # 修改：查找name中含有.rar的文件，而不是直接使用第一个assets
     local DOWNLOAD_LINK=$(echo "${API_RESPONSE}" | jq -r '.assets[] | select(.name | contains(".rar")) | .browser_download_url' | head -n 1)
 
@@ -183,7 +147,7 @@ DOWNLOAD_MOD_MENU() {
     fi
 
     if command -v 7z &> /dev/null; then
-        7z x -y "${DOWNLOAD_DIR}/${FILENAME}" -o"${DOWNLOAD_DIR}/JMBQ/assets/arch"
+        7z x -y "${DOWNLOAD_DIR}/${FILENAME}" -o"${DOWNLOAD_DIR}/JMBQ"
     else
         echo "错误: 未找到7z工具，无法解压！"
         exit 1
