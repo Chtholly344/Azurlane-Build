@@ -27,10 +27,12 @@
 
 ## Windows 一键打包工具预览
 <div align="center">
-    <img height="480" src="images/AL_Paker.png" alt="ALP"></br></br>
+    <img height="240" src="images/AL_paker_home.png" alt="ALH">
+    <img height="240" src="images/AL_paker_build.png" alt="ALB">
+    </br></br>
 </div>
 
-基于 .NET10 和 WInUI3，使用 DeepSeek V4 Pro 开发，可能存在大量 BUG，具体上传时间待定
+基于 .NET10 和 WinUI，使用 DeepSeek V4 Flash/Pro 开发，可能存在大量 BUG，若你希望先行体验&测试，可以直接提出 Issue 请求
 
 ---
 
@@ -54,7 +56,7 @@
 
 ## 预览
 <div align="center">
-    <img height="480" src="images/Preview.png" alt="ALP"></br></br>
+    <img height="240" src="images/Preview.png" alt="ALP"></br></br>
 </div>
 
 ---
